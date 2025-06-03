@@ -21,6 +21,7 @@
 struct pq_node {
   void* data;
   int priority;
+  struct pq_node* next;
 };
 
 struct pq {
