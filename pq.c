@@ -18,15 +18,23 @@
  * in addition, you want to define an element struct with both data and priority, 
  * corresponding to the elements of the priority queue. 
  */
-struct pq;
+struct pq_node {
+  void* data;
+  int priority;
+};
 
+struct pq {
+  struct pq_node* head;
+};
 
 /*
  * This function should allocate and initialize an empty priority queue and
  * return a pointer to it.
  */
 struct pq* pq_create() {
-  return NULL;
+  struct pq* pq = malloc(sizeof(struct pq));
+  pq->head = NULL;
+  return pq;
 }
 
 
@@ -39,7 +47,13 @@ struct pq* pq_create() {
  *   pq - the priority queue to be destroyed.  May not be NULL.
  */
 void pq_free(struct pq* pq) {
-
+  struct pq_node* curr = pq->head;
+  while (curr) {
+    struct pq_node* next = curr->next;
+    free(curr);
+    curr = next;
+  }
+  free(pq);
 }
 
 
@@ -55,7 +69,7 @@ void pq_free(struct pq* pq) {
  *   Should return 1 if pq is empty and 0 otherwise.
  */
 int pq_isempty(struct pq* pq) {
-  return 1;
+  return pq->head == NULL;
 }
 
 
@@ -77,7 +91,24 @@ int pq_isempty(struct pq* pq) {
  *     be the FIRST one returned.
  */
 void pq_insert(struct pq* pq, void* data, int priority) {
+  struct pq_node* new_node = malloc(sizeof(struct pq_node));
+  new_node->data = data;
+  new_node->priority = priority;
+  new_node->next = NULL;
 
+  if (pq->head == NULL || priority > pq->head->priority) {
+    new_node->next = pq->head;
+    pq->head = new_node;
+    return;
+  }
+
+  struct pq_node* curr = pq->head;
+  while (curr->next && curr->next->priority >= priority) {
+    curr = curr->next;
+  }
+
+  new_node->next = curr->next;
+  curr->next = new_node;
 }
 
 
@@ -94,7 +125,7 @@ void pq_insert(struct pq* pq, void* data, int priority) {
  *   max priority value.
  */
 void* pq_max(struct pq* pq) {
-  return NULL;
+  return pq->head->data;
 }
 
 
@@ -111,7 +142,7 @@ void* pq_max(struct pq* pq) {
  *   with highest priority value.
  */
 int pq_max_priority(struct pq* pq) {
-  return 0;
+  return pq->head->priority;
 }
 
 
@@ -129,5 +160,9 @@ int pq_max_priority(struct pq* pq) {
  *   highest priority value.
  */
 void* pq_max_dequeue(struct pq* pq) {
-  return NULL;
+  struct pq_node* node = pq->head;
+  void* data = node->data;
+  pq->head = node->next;
+  free(node);
+  return data;
 }
